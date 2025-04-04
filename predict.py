@@ -75,7 +75,7 @@ def main():
     model_class = {'alphafold': AlphaFoldWrapper, 'esmfold': ESMFoldWrapper}[args.mode]
 
     if args.weights:
-        ckpt = torch.load(args.weights, map_location='cpu')
+        ckpt = torch.load(args.weights, map_location='cpu',weights_only=False)
         model = model_class(**ckpt['hyper_parameters'], training=False)
         model.model.load_state_dict(ckpt['params'], strict=False)
         model = model.cuda()
@@ -85,7 +85,7 @@ def main():
         model = model_class(config, None, training=False)
         if args.mode == 'esmfold':
             path = "esmfold_3B_v1.pt"
-            model_data = torch.load(path, map_location='cpu')
+            model_data = torch.load(path, map_location='cpu',weights_only=False)
             model_state = model_data["model"]
             model.model.load_state_dict(model_state, strict=False)
             model = model.to(torch.float).cuda()

@@ -1,5 +1,65 @@
 # AlphaFlow
 
+## Installation
+```bash
+conda create -n alphaflow python=3.9
+# pip install torch==1.12.1+cu113 -f https://download.pytorch.org/whl/torch_stable.html
+pip install biopython==1.79 dm-tree==0.1.6 modelcif==0.7 ml-collections==0.1.0 scipy==1.7.1 absl-py einops
+pip install pytorch_lightning==2.0.4 fair-esm mdtraj
+pip install wandb
+pip install numpy==1.21.2 pandas==1.5.3
+git clone git@github.com:aqlaboratory/openfold.git
+cd openfold
+git checkout 103d037
+# ssh to compute node
+module load cuda/12.1
+module load gcc/12.2.0
+export CC=/lustre/software/gcc/12.2.0/bin/gcc
+export CXX=/lustre/software/gcc/12.2.0/bin/g++
+pip install .
+```
+
+## Download model weights (see behind)
+
+## Run
+```bash
+python predict.py --mode alphafold --input_csv examples/1ake/csv/1ake.csv\
+ --msa_dir examples --weights weights/alphaflow_pdb_base_202402.pt\
+ --samples 3 --outpdb examples/1ake/output_pdbs
+```
+
+## Troubleshooting
+```bash
+error: #error C++17 or later compatible compiler is required to use PyTorch.
+
+in the setup.py
+
+extra_compile_args={
+    'cxx': ['-O3', '-std=c++17'] + version_dependent_macros,
+    'nvcc': (
+        ['-O3', '--use_fast_math', '-std=c++17'] +
+        version_dependent_macros +
+        extra_cuda_flags
+    ),
+}
+
+remember to change the c++14 flag in `extra_cuda_flags`.
+extra_cuda_flags = [
+    '-std=c++17',
+    '-maxrregcount=50',
+    '-U__CUDA_NO_HALF_OPERATORS__',
+    '-U__CUDA_NO_HALF_CONVERSIONS__',
+    '--expt-relaxed-constexpr',
+    '--expt-extended-lambda'
+]
+```
+
+```bash
+ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject
+
+```
+
+
 AlphaFlow is a modified version of AlphaFold, fine-tuned with a flow matching objective, capable of generative modeling of protein conformational ensembles. In particular, AlphaFlow models:
 * Experimental ensembles, i.e, potential conformational states as they would be deposited in the PDB
 * Molecular dynamics ensembles at physiological temperatures
